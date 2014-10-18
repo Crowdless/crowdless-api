@@ -8,12 +8,16 @@ exports.migrate = function() {
     var landmarks = res.body.response.groups[0].items;
     for ( var i = 0 ; i < landmarks.length ; i++ ) {
       var landmark = landmarks[i].venue
+
       if(typeof(landmark.featuredPhotos)!='undefined' && landmark.featuredPhotos.count>=1){
         var imgurl = landmark.featuredPhotos.items[0].prefix + '500x500' + landmark.featuredPhotos.items[0].suffix
       } else {
-        var imgurl = ''
+        var imgurl = 'http://placehold.it/500x500'
       }
-      new Landmark({foursquare_id: landmark.id, name: landmark.name, description: "No description yet", image_url: imgurl, rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
+
+      var description = '';
+
+      new Landmark({foursquare_id: landmark.id, name: landmark.name, description: description, image_url: imgurl, rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
     };
   });
 }
