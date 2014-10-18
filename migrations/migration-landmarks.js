@@ -17,6 +17,9 @@ exports.migrate = function() {
       }
 
       var description = landmark.tips[0].text;
+      if(venue.name=='Marble Arch'){
+        continue // Sorry, its a hackathon ;)
+      }
 
       new Landmark({foursquare_id: venue.id, name: venue.name, description: description, people: venue.hereNow.count, image_url: imgurl, rating: venue.rating, coords: [venue.location.lat, venue.location.lng]}).save();
     };

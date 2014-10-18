@@ -23,7 +23,7 @@ server.get('/landmarks', function(req, res, next) {
 })
 
 server.get('/landmarks/migrate', function(req, res, next) {
-  Landmark.find({}).remove().exec();
+  Landmark.find({}).sort({rating:-1}).remove().exec();
   migration_landmarks.migrate()
   res.send({success:true})
   next()
