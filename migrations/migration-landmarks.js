@@ -8,7 +8,6 @@ exports.migrate = function() {
     var landmarks = res.body.response.groups[0].items;
     for ( var i = 0 ; i < landmarks.length ; i++ ) {
       var landmark = landmarks[i].venue
-      console.log(landmark.name);
       new Landmark({name: landmark.name, description: "No description yet", img_src:"", rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
     };
   });
