@@ -29,6 +29,11 @@ server.get('/landmarks/migrate', function(req, res, next) {
   next()
 })
 
+server.get('/cluster', function(req, res, next) {
+    res.send()
+    next()
+})
+
 server.listen(8080, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
