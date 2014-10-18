@@ -10,3 +10,5 @@ var landmarkSchema = new Schema({
 });
 
 var Landmark = mongoose.model('Landmark', landmarkSchema);
+
+module.exports = Landmark
