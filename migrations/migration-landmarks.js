@@ -17,7 +17,7 @@ exports.migrate = function() {
 
       var description = '';
 
-      new Landmark({foursquare_id: landmark.id, name: landmark.name, description: description, image_url: imgurl, rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
+      new Landmark({foursquare_id: landmark.id, name: landmark.name, description: description, people: landmark.hereNow.count, image_url: imgurl, rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
     };
   });
 }
