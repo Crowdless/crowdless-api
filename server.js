@@ -5,6 +5,8 @@ var mongoose = require('mongoose')
 mongoose.connect(process.env.MONGO_URI)
 
 var Landmark = require('./models/landmark.js')
+var Activity = require('./models/activity.js')
+
 var migration_landmarks = require('./migrations/migration-landmarks')
 
 var server = restify.createServer();
