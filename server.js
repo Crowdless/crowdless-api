@@ -1,4 +1,11 @@
+var dotenv = require('dotenv').load()
 var restify = require('restify');
+var mongoose = require('mongoose')
+
+mongoose.connect(process.env.MONGO_URI)
+
+var migration = require('./migrations/migration-landmarks')
+migration.migrate()
 
 function respond(req, res, next) {
     res.send('hello ' + req.params.name);
