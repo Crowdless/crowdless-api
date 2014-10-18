@@ -15,7 +15,7 @@ exports.migrate = function() {
         var imgurl = 'http://placehold.it/500x500'
       }
 
-      var description = '';
+      var description = landmark.tips[0].text;
 
       new Landmark({foursquare_id: landmark.id, name: landmark.name, description: description, people: landmark.hereNow.count, image_url: imgurl, rating: landmark.rating, coords: [landmark.location.lat, landmark.location.lng]}).save();
     };
