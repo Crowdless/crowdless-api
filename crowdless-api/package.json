@@ -1,0 +1,14 @@
+{
+  "name": "crowdless-api",
+  "version": "0.0.1-2",
+  "dependencies": {
+    "restify": "^2.8.3"
+  },
+  "subdomain": "crowdless",
+  "scripts": {
+    "start": "express/app.js"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
