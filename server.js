@@ -15,7 +15,7 @@ server.get('/json', function(req, res, next) {
 })
 
 server.get('/landmarks', function(req, res, next) {
-  Landmark.find({}).exec(function (err, results) {
+  Landmark.find({}).sort({rating:-1}).exec(function (err, results) {
     if (err) return handleError(err);
     res.send(results)
     next()
@@ -23,7 +23,7 @@ server.get('/landmarks', function(req, res, next) {
 })
 
 server.get('/landmarks/migrate', function(req, res, next) {
-  Landmark.find({}).sort({rating:-1}).remove().exec();
+  Landmark.find({}).remove().exec();
   migration_landmarks.migrate()
   res.send({success:true})
   next()
