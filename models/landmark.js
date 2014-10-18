@@ -7,6 +7,7 @@ var landmarkSchema = new Schema({
   description: String,
   image_url: String,
   rating: Number,
+  people: Number,
   coords: {type: [Number], index: '2d'}
 });
 
