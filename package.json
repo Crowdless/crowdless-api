@@ -4,6 +4,10 @@
   "dependencies": {
     "brain": "^0.7.0",
     "dotenv": "^0.4.0",
+    "geolib": "^2.0.14",
+    "grid-graph": "0.0.0",
+    "hashmap": "^1.1.0",
+    "moment": "^2.8.3",
     "mongoose": "^3.8.17",
     "restify": "^2.8.3",
     "superagent": "^0.20.0"
