@@ -36,45 +36,18 @@ server.get('/landmarks/migrate', function(req, res, next) {
 server.get('/schedule', function(req, res, next) {
   var ids = req.params.ids.split(',')
 
-  // Do some fancy alex stuff here
+  var returnarray = []
 
-  var sample = [
-    {
-      landmark: {
-        name: "Big Ben",
-        image_url: "http://images.rapgenius.com/du3efo4t81u169zb6516x29ev.1000x375x1.jpg",
-        coords: [0,0]
-      },
-      timeframe: {
-        start: 131231232,
-        end: 3123123123
-      }
-    },
-    {
-      landmark: {
-        name: "Big Ben",
-        image_url: "http://images.rapgenius.com/du3efo4t81u169zb6516x29ev.1000x375x1.jpg",
-        coords: [0,0]
-      },
-      timeframe: {
-        start: 131231232,
-        end: 3123123123
-      }
-    },
-    {
-      landmark: {
-        name: "Big Ben",
-        image_url: "http://images.rapgenius.com/du3efo4t81u169zb6516x29ev.1000x375x1.jpg",
-        coords: [0,0]
-      },
-      timeframe: {
-        start: 131231232,
-        end: 3123123123
-      }
+  Landmark.find({_id:{$in:ids}}).exec(function (err, results) {
+    if (err) return handleError(err)
+    
+    for(var i=0;i<results.length;i++){
+      returnarray.push({landmark:results[i],timeframe:{start:12343,end:12344}})
     }
-  ];
-  res.send(sample)
-  next()
+
+    res.send(returnarray)
+    next()
+  })
 })
 
 server.get('/cluster', function(req, res, next) {
