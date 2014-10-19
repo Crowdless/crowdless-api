@@ -83,7 +83,7 @@ server.get('/schedule', function(req, res, next) {
       for( var task in records_landmarks) {
         var landmarkToVisit = records_landmarks[task]
 
-        var boundaryTime = resultArray[task].value + 2
+        var boundaryTime = resultArray[task].value + 3
 
         var am = false
 
@@ -111,7 +111,7 @@ server.get('/schedule', function(req, res, next) {
 
         }
         console.log('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary)
-        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 30, minLength: 30, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 75, minLength: 75, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
       }
 
       var resources = [
@@ -155,7 +155,7 @@ server.get('/generate', function(req, res, next) {
   Network.find({}).remove().exec();
 
   Landmark.find({}).exec(function (err, records_landmarks) {
-    Activity.find({}).limit(200).exec(function (err, records_activities){
+    Activity.find({}).limit(2000).exec(function (err, records_activities){
       for(var landmark_n in records_landmarks){
         var landmark = records_landmarks[landmark_n]
         var landmark_counters = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
