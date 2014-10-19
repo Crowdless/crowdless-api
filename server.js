@@ -155,7 +155,7 @@ server.get('/generate', function(req, res, next) {
   Network.find({}).remove().exec();
 
   Landmark.find({}).exec(function (err, records_landmarks) {
-    Activity.find({}).limit(200).exec(function (err, records_activities){
+    Activity.find({}).limit(2000).exec(function (err, records_activities){
       for(var landmark_n in records_landmarks){
         var landmark = records_landmarks[landmark_n]
         var landmark_counters = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
