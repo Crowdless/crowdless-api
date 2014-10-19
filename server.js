@@ -4,6 +4,8 @@ var mongoose = require('mongoose')
 var moment = require('moment')
 var geolib = require('geolib')
 var brain = require('brain')
+var schedule = require('schedulejs')
+var later = require('later')
 
 mongoose.connect(process.env.MONGO_URI)
 
@@ -39,7 +41,7 @@ server.get('/landmarks/migrate', function(req, res, next) {
 server.get('/schedule', function(req, res, next) {
   var ids = req.params.ids.split(',')
 
-  var returnarray = []
+  var resultArray = []
 
   Landmark.find({_id:{$in:ids}}).exec(function (err, records_landmarks) {
     Activity.find({}).limit(2000).exec(function (err, records_activities){
@@ -95,10 +97,73 @@ server.get('/schedule', function(req, res, next) {
             lowest_num = counter
           }
         };
+
+
         var op_time = lowest_index + 9;
-        console.log("Go to " + landmark.name + " @ " + op_time)
+        resultArray.push({key: landmark, value: op_time})
       }
-      res.send({success:"win"})
+
+      // Take the times provided for the given monuments and attempt to compute a path between them.
+
+      var taskList = []
+      for( var task in records_landmarks) {
+        var landmarkToVisit = records_landmarks[task]
+
+
+        var boundaryTime = resultArray[task].value + 2
+
+        var am = false
+
+        if(resultArray[task].value > 12) {
+
+          am = "pm"
+          resultArray[task].value = resultArray[task].value - 12
+
+        } else {
+
+          am = "am"
+
+        }
+
+        var amBoundary = false
+
+        if(boundaryTime > 12) {
+
+          amBoundary = "pm"
+          boundaryTime = boundaryTime - 12
+
+        } else {
+
+          amBoundary = "am"
+
+        }
+        console.log('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary)
+        taskList.push({id: landmarkToVisit, duration: 30, minLength: 30, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+      }
+
+      var resources = [
+        {id: 'person', available: later.parse.text('after 09:00am and before 8:00pm')}
+      ];
+
+      var projectAvailability = later.parse.text('every weekday'),
+          startDate = new Date()
+
+      var finalSchedule = schedule.create(taskList, resources, projectAvailability, startDate);
+
+      // Now we compile the final response object. The gateway to glory
+      var response = []
+
+      var keys = Object.keys(finalSchedule.scheduledTasks)
+
+
+      for (var key in keys) {
+        var location = keys[key]
+
+        response.push({location: location, timeframe: {start: finalSchedule.scheduledTasks[location].earlyStart, end: finalSchedule.scheduledTasks[location].earlyFinish}})
+        console.log(response)
+      }
+
+      res.send(response)
       next()
     })
   })
