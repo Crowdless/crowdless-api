@@ -111,7 +111,7 @@ server.get('/schedule', function(req, res, next) {
 
         }
         console.log('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary)
-        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 60, minLength: 60, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 75, minLength: 75, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
       }
 
       var resources = [
