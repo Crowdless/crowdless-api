@@ -114,7 +114,7 @@ server.get('/schedule', function(req, res, next) {
         var duration = 75
         var buffer = ( Math.random() - 0.5 ) * 30
         duration += buffer
-        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 75, minLength: 75, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+        taskList.push({id: JSON.stringify(landmarkToVisit), duration: duration, minLength: duration, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
       }
 
       var resources = [
