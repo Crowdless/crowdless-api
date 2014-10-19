@@ -6,11 +6,13 @@ var geolib = require('geolib')
 var brain = require('brain')
 var schedule = require('schedulejs')
 var later = require('later')
+var async = require('async')
 
 mongoose.connect(process.env.MONGO_URI)
 
-var Landmark = require('./models/landmark.js')
-var Activity = require('./models/activity.js')
+var Landmark = require('./models/landmark')
+var Activity = require('./models/activity')
+var Network = require('./models/network')
 
 var migration_landmarks = require('./migrations/migration-landmarks')
 
@@ -42,52 +44,26 @@ server.get('/schedule', function(req, res, next) {
   var ids = req.params.ids.split(',')
 
   var resultArray = []
+  var landmark_networks = {}
 
-  Landmark.find({_id:{$in:ids}}).exec(function (err, records_landmarks) {
-    Activity.find({}).limit(2000).exec(function (err, records_activities){
+  Network.find({}).exec(function (err, records_networks) {
+    for (var i = 0; i < records_networks.length; i++) {
+      landmark_networks[records_networks[i].landmark_id] = JSON.parse(records_networks[i].network)
+    }
+
+    Landmark.find({_id:{$in:ids}}).exec(function (err, records_landmarks) {
       for(var landmark_n in records_landmarks){
         var landmark = records_landmarks[landmark_n]
-        var landmark_counters = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        for(var activity_n in records_activities){
-          var activity = records_activities[activity_n]
-          var distance = geolib.getDistance(
-            { latitude: landmark.coords[0], longitude: landmark.coords[1] },
-            { latitude: activity.interaction.interaction.geo.latitude, longitude: activity.interaction.interaction.geo.longitude }
-          )
-
-          if(distance<=process.env.DISTANCE_TOLERANCE){
-            var time = moment(activity.interaction.interaction.created_at)
-            var hour = time.hour()
-            landmark_counters[hour]++;
-          }
-        }
-        var highest_index = 0
-        var highest_num = 0
-        for (var i = 0; i < landmark_counters.length; i++) {
-          var counter = landmark_counters[i]
-          if(counter>highest_num){
-            highest_index = i
-            highest_num = counter
-          }
-        };
-        var relative_count = []
-        for (var i = 0; i < landmark_counters.length; i++) {
-          relative_count[i] = landmark_counters[i]/highest_num
-        };
-        var net = new brain.NeuralNetwork()
-        var stupid = []
-        for (var i = 0; i < 24; i++) {
-          stupid.push({input: {h:i/24}, output: {busy:relative_count[i]}});
-        };
-        net.train(stupid)
         
+        var net = new brain.NeuralNetwork();
+        net.fromJSON(landmark_networks[landmark._id]);
         var openingHours_busyness = [0,0,0,0,0,0,0,0,0,0]
         var counter_1 = 0
         for (var i = 9; i < 20; i++) {
           openingHours_busyness[counter_1] = net.run({h:i/24}).busy
           counter_1 ++
         };
-
+        
         var lowest_index = 0
         var lowest_num = 1
         for (var i = 0; i < openingHours_busyness.length; i++) {
@@ -98,17 +74,14 @@ server.get('/schedule', function(req, res, next) {
           }
         };
 
-
         var op_time = lowest_index + 9;
         resultArray.push({key: landmark, value: op_time})
+        console.log("Go to " + landmark.name + " @ " + op_time)
       }
-
-      // Take the times provided for the given monuments and attempt to compute a path between them.
-
+      
       var taskList = []
       for( var task in records_landmarks) {
         var landmarkToVisit = records_landmarks[task]
-
 
         var boundaryTime = resultArray[task].value + 2
 
@@ -138,7 +111,7 @@ server.get('/schedule', function(req, res, next) {
 
         }
         console.log('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary)
-        taskList.push({id: landmarkToVisit, duration: 30, minLength: 30, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 30, minLength: 30, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
       }
 
       var resources = [
@@ -158,9 +131,7 @@ server.get('/schedule', function(req, res, next) {
 
       for (var key in keys) {
         var location = keys[key]
-
-        response.push({location: location, timeframe: {start: finalSchedule.scheduledTasks[location].earlyStart, end: finalSchedule.scheduledTasks[location].earlyFinish}})
-        console.log(response)
+        response.push({landmark: JSON.parse(location), timeframe: {start: finalSchedule.scheduledTasks[location].earlyStart, end: finalSchedule.scheduledTasks[location].earlyFinish}})
       }
 
       res.send(response)
@@ -178,6 +149,55 @@ server.get('/schedule', function(req, res, next) {
   //   res.send(returnarray)
   //   next()
   // })
+})
+
+server.get('/generate', function(req, res, next) {
+  Network.find({}).remove().exec();
+
+  Landmark.find({}).exec(function (err, records_landmarks) {
+    Activity.find({}).limit(200).exec(function (err, records_activities){
+      for(var landmark_n in records_landmarks){
+        var landmark = records_landmarks[landmark_n]
+        var landmark_counters = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        for(var activity_n in records_activities){
+          var activity = records_activities[activity_n]
+          var distance = geolib.getDistance(
+            { latitude: landmark.coords[0], longitude: landmark.coords[1] },
+            { latitude: activity.interaction.interaction.geo.latitude, longitude: activity.interaction.interaction.geo.longitude }
+          )
+          if(distance<=process.env.DISTANCE_TOLERANCE){
+            var time = moment(activity.interaction.interaction.created_at)
+            var hour = time.hour()
+            landmark_counters[hour]++;
+          }
+        }
+        var highest_index = 0
+        var highest_num = 0
+        for (var i = 0; i < landmark_counters.length; i++) {
+          var counter = landmark_counters[i]
+          if(counter>highest_num){
+            highest_index = i
+            highest_num = counter
+          }
+        };
+        var relative_count = []
+        for (var i = 0; i < landmark_counters.length; i++) {
+          relative_count[i] = landmark_counters[i]/highest_num
+        };
+        var net = new brain.NeuralNetwork()
+        var stupid = []
+        for (var i = 0; i < 24; i++) {
+          stupid.push({input: {h:i/24}, output: {busy:relative_count[i]}});
+        };
+        net.train(stupid)
+
+        var json = JSON.stringify(net.toJSON());
+        new Network({landmark_id:landmark._id,network:json}).save()
+      }
+      res.send({done:true})
+      next()
+    })
+  })
 })
 
 server.listen(8080, function() {
