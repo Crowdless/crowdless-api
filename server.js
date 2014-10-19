@@ -78,60 +78,45 @@ server.get('/schedule', function(req, res, next) {
         resultArray.push({key: landmark, value: op_time})
         console.log("Go to " + landmark.name + " @ " + op_time)
       }
-      
-      var taskList = []
-      for( var task in records_landmarks) {
-        var landmarkToVisit = records_landmarks[task]
 
-        var boundaryTime = resultArray[task].value + 3
+      // Work out the schedule.
+      // Calendar is a map where each hour of the day between 9am and 7pm is represented in 24 hour form.
+      // If the preferred hour cannot be assigned the next hour is
+      var calendar = {}
+      for ( var iterator in records_landmarks) {
+        var landmarkToVisit = records_landmarks[iterator]
+        var time = resultArray[iterator].value
 
-        var am = false
-
-        if(resultArray[task].value > 12) {
-
-          am = "pm"
-          resultArray[task].value = resultArray[task].value - 12
-
-        } else {
-
-          am = "am"
-
+        var pushTime = function(timeArg) {
+          timeArg = timeArg + 1
+          if ( calendar[timeArg] == null ) {
+            calendar[timeArg] = landmarkToVisit
+          } else {
+            pushTime(timeArg)
+          }
         }
 
-        var amBoundary = false
-
-        if(boundaryTime > 12) {
-
-          amBoundary = "pm"
-          boundaryTime = boundaryTime - 12
-
+        if ( calendar[time] == null ) {
+          calendar[time] = landmarkToVisit
         } else {
-
-          amBoundary = "am"
-
+          pushTime(time)
         }
-        console.log('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary)
-        taskList.push({id: JSON.stringify(landmarkToVisit), duration: 60, minLength: 60, available: later.parse.text('every weekday from ' + resultArray[task].value + ':00' + am + ' to ' + boundaryTime + ':00' + amBoundary), resources: ['person']})
+
       }
 
-      var resources = [
-        {id: 'person', available: later.parse.text('after 09:00am and before 8:00pm')}
-      ];
-
-      var projectAvailability = later.parse.text('every weekday'),
-          startDate = new Date()
-
-      var finalSchedule = schedule.create(taskList, resources, projectAvailability, startDate);
-
+      console.log(calendar)
       // Now we compile the final response object. The gateway to glory
       var response = []
 
-      var keys = Object.keys(finalSchedule.scheduledTasks)
+      var keys = Object.keys(calendar)
 
 
       for (var key in keys) {
-        var location = keys[key]
-        response.push({landmark: JSON.parse(location), timeframe: {start: finalSchedule.scheduledTasks[location].earlyStart, end: finalSchedule.scheduledTasks[location].earlyFinish}})
+        var time = keys[key]
+        var momentTime = moment()
+        momentTime.
+        var location = calendar[time]
+        response.push({landmark: location, timeframe: {start: finalSchedule.scheduledTasks[location].earlyStart, end: finalSchedule.scheduledTasks[location].earlyFinish}})
       }
 
       res.send(response)
